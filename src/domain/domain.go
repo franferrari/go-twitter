@@ -4,6 +4,7 @@ import "time"
 
 //Tweet define la estructura de un tweet
 type Tweet struct {
+	Id   int
 	User string
 	Text string
 	Date *time.Time
@@ -12,5 +13,5 @@ type Tweet struct {
 //NewTweet crea un nuevo tweet
 func NewTweet(user string, text string) *Tweet {
 	t := time.Now()
-	return &Tweet{user, text, &t}
+	return &Tweet{0, user, text, &t}
 }

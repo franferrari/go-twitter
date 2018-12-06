@@ -50,6 +50,28 @@ func main() {
 		},
 	})
 
+	shell.AddCmd(&ishell.Cmd{
+		Name: "showAllTweets",
+		Help: "Shows all tweets",
+		Func: func(c *ishell.Context) {
+
+			defer c.ShowPrompt(true)
+
+			tweets := service.GetTweets()
+			if len(tweets) == 0 {
+				c.Println("No existen tweets")
+				return
+			}
+
+			for i := 0; i < len(tweets); i++ {
+				if tweets[i] != nil {
+					c.Printf("User: %s\n Text: %s\n Date and time: %v\n\n", tweets[i].User, tweets[i].Text, tweets[i].Date.Format(time.RFC822))
+				}
+			}
+			return
+		},
+	})
+
 	shell.Run()
 
 }
