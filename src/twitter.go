@@ -63,9 +63,9 @@ func main() {
 				return
 			}
 
-			for i := 0; i < len(tweets); i++ {
-				if tweets[i] != nil {
-					c.Printf("User: %s\n Text: %s\n Date and time: %v\n\n", tweets[i].User, tweets[i].Text, tweets[i].Date.Format(time.RFC822))
+			for _, tweet := range tweets {
+				if tweet != nil {
+					c.Printf("User: %s\n Text: %s\n Date and time: %v\n\n", tweet.User, tweet.Text, tweet.Date.Format(time.RFC822))
 				}
 			}
 			return

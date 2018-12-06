@@ -34,6 +34,16 @@ func PublishTweet(tweet *domain.Tweet) (int, error) {
 	return Tweet.Id, nil
 }
 
+func CountTweetsByUser(user string) int {
+	var count int
+	for _, tweet := range listatweets {
+		if tweet != nil && tweet.User == user {
+			count++
+		}
+	}
+	return count
+}
+
 //GetTweet obtiene un tweet
 func GetTweet() *domain.Tweet {
 	return Tweet
@@ -47,9 +57,9 @@ func GetTweets() []*domain.Tweet {
 //GetTweetByID obtiene el tweet que tenga un cierto ID
 func GetTweetByID(id int) (*domain.Tweet, error) {
 	var tweet *domain.Tweet
-	for i := 0; i < len(listatweets); i++ {
-		if listatweets[i] != nil && listatweets[i].Id == id {
-			tweet = listatweets[i]
+	for _, tweetie := range listatweets {
+		if tweetie != nil && tweetie.Id == id {
+			tweet = tweetie
 		}
 	}
 	if tweet == nil {

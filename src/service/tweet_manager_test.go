@@ -143,6 +143,29 @@ func TestCantRetrieveTweetWithInexistentID(t *testing.T) {
 		t.Error("Expected error is couldn't fint tweet with that ID")
 	}
 }
+func TestCanCountTheTweetsSentByAnUser(t *testing.T) {
+	service.InitializeService()
+	var tweet, tweet2, tweet3 *domain.Tweet
+	user := "usuario"
+	anotherUser := "usuario2"
+
+	text := "This is my first tweet"
+	text2 := "This is my second tweet"
+
+	tweet = domain.NewTweet(user, text)
+	tweet2 = domain.NewTweet(anotherUser, text)
+	tweet3 = domain.NewTweet(user, text2)
+
+	service.PublishTweet(tweet)
+	service.PublishTweet(tweet2)
+	service.PublishTweet(tweet3)
+
+	count := service.CountTweetsByUser(user)
+
+	if count != 2 {
+		t.Errorf("Expected count is 2, but it was %d", count)
+	}
+}
 
 func isValidTweet(tweet *domain.Tweet, id int, user string, text string) bool {
 	if tweet.Id != id {
