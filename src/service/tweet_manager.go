@@ -8,13 +8,15 @@ import (
 
 //Tweet es el string con el comentario
 var Tweet *domain.Tweet
-var listatweets []*domain.Tweet
+var listAllTweets []*domain.Tweet
+var tweetsByUser map[string][]*domain.Tweet
 
 func main() {}
 
-//InitializeService limpia la lista de tweets guardados
+//InitializeService limpia la lista de tweets guardados y inicializa el mapa con los tweets de los usuarios
 func InitializeService() {
-	listatweets = make([]*domain.Tweet, 0)
+	listAllTweets = make([]*domain.Tweet, 0)
+	tweetsByUser = make(map[string][]*domain.Tweet)
 }
 
 //PublishTweet publica un tweet
@@ -29,19 +31,24 @@ func PublishTweet(tweet *domain.Tweet) (int, error) {
 		return 0, fmt.Errorf("Tweet can't exceed 140 characters")
 	}
 	Tweet = tweet
-	Tweet.Id = len(listatweets) + 1
-	listatweets = append(listatweets, tweet)
+	Tweet.Id = len(listAllTweets) + 1
+	listAllTweets = append(listAllTweets, Tweet)
+	tweetsByUser[Tweet.User] = append(tweetsByUser[Tweet.User], Tweet)
 	return Tweet.Id, nil
 }
 
+//CountTweetsByUser devuelve la cantidad de tweets hechos por un usuario
 func CountTweetsByUser(user string) int {
-	var count int
-	for _, tweet := range listatweets {
-		if tweet != nil && tweet.User == user {
-			count++
-		}
+	return len(tweetsByUser[user])
+}
+
+//GetTweetsByUser devuelve los tweets de un usuario
+func GetTweetsByUser(user string) []*domain.Tweet {
+	_, exists := tweetsByUser[user]
+	if exists {
+		return tweetsByUser[user]
 	}
-	return count
+	return nil
 }
 
 //GetTweet obtiene un tweet
@@ -51,13 +58,13 @@ func GetTweet() *domain.Tweet {
 
 //GetTweets obtiene todos los tweets
 func GetTweets() []*domain.Tweet {
-	return listatweets
+	return listAllTweets
 }
 
 //GetTweetByID obtiene el tweet que tenga un cierto ID
 func GetTweetByID(id int) (*domain.Tweet, error) {
 	var tweet *domain.Tweet
-	for _, tweetie := range listatweets {
+	for _, tweetie := range listAllTweets {
 		if tweetie != nil && tweetie.Id == id {
 			tweet = tweetie
 		}

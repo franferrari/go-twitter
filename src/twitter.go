@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	service.InitializeService()
 
 	shell := ishell.New()
 	shell.SetPrompt("Tweeter >> ")
@@ -25,7 +26,7 @@ func main() {
 
 			tweet := c.ReadLine()
 
-			service.PublishTweet(domain.NewTweet("usuario", tweet))
+			service.PublishTweet(domain.NewTweet("Usuario", tweet))
 
 			c.Print("Tweet sent\n")
 
@@ -72,6 +73,32 @@ func main() {
 		},
 	})
 
-	shell.Run()
+	shell.AddCmd(&ishell.Cmd{
+		Name: "getTweetsByUser",
+		Help: "Shows all tweets by a single user",
+		Func: func(c *ishell.Context) {
 
+			defer c.ShowPrompt(true)
+
+			c.Print("Write the username: ")
+
+			user := c.ReadLine()
+
+			tweets := service.GetTweetsByUser(user)
+
+			if len(tweets) == 0 {
+				c.Println("No tweets for that user")
+				return
+			}
+
+			for _, tweet := range tweets {
+				if tweet != nil {
+					c.Printf("User: %s\n Text: %s\n Date and time: %v\n\n", tweet.User, tweet.Text, tweet.Date.Format(time.RFC822))
+				}
+			}
+			return
+		},
+	})
+
+	shell.Run()
 }

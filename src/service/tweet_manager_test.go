@@ -8,6 +8,7 @@ import (
 )
 
 func TestPublishedTweetIsSaved(t *testing.T) {
+	service.InitializeService()
 	var tweet *domain.Tweet
 	user := "grupoesfera"
 	text := "This is my first tweet"
@@ -164,6 +165,68 @@ func TestCanCountTheTweetsSentByAnUser(t *testing.T) {
 
 	if count != 2 {
 		t.Errorf("Expected count is 2, but it was %d", count)
+	}
+}
+
+func TestCanRetrieveTheTweetsSentByAnUser(t *testing.T) {
+	service.InitializeService()
+	var tweet, tweet2, tweet3 *domain.Tweet
+	user := "usuario"
+	anotherUser := "usuario2"
+
+	text := "This is my first tweet"
+	text2 := "This is my second tweet"
+
+	tweet = domain.NewTweet(user, text)
+	tweet2 = domain.NewTweet(anotherUser, text)
+	tweet3 = domain.NewTweet(user, text2)
+
+	service.PublishTweet(tweet)
+	service.PublishTweet(tweet2)
+	service.PublishTweet(tweet3)
+
+	tweets := service.GetTweetsByUser(user)
+
+	if len(tweets) != 2 {
+		t.Errorf("Expected count is 2, but it was %d", len(tweets))
+	}
+
+	firstPublishedTweet := tweets[0]
+	secondPublishedTweet := tweets[1]
+
+	if !isValidTweet(firstPublishedTweet, 1, user, text) {
+		t.Errorf("Tweet is invalid")
+		return
+	}
+
+	if !isValidTweet(secondPublishedTweet, 3, user, text2) {
+		t.Errorf("Tweet is invalid")
+		return
+	}
+}
+
+func TestIfUserDoesntExistReturnsNilTweets(t *testing.T) {
+	service.InitializeService()
+	var tweet, tweet2, tweet3 *domain.Tweet
+	user := "usuario"
+	anotherUser := "usuario2"
+	user3 := "randomuser"
+
+	text := "This is my first tweet"
+	text2 := "This is my second tweet"
+
+	tweet = domain.NewTweet(user, text)
+	tweet2 = domain.NewTweet(anotherUser, text)
+	tweet3 = domain.NewTweet(user, text2)
+
+	service.PublishTweet(tweet)
+	service.PublishTweet(tweet2)
+	service.PublishTweet(tweet3)
+
+	tweets := service.GetTweetsByUser(user3)
+
+	if tweets != nil {
+		t.Errorf("Expected count is 0, but it was %d", len(tweets))
 	}
 }
 
