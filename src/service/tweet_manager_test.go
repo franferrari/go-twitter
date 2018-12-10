@@ -264,7 +264,7 @@ func TestRegisteredUserCanBeFound(t *testing.T) {
 
 	tweetManager.RegisterUser(user)
 
-	usuario := tweetManager.GetUser(nick)
+	usuario, _ := tweetManager.GetUser(nombre)
 
 	if usuario == nil {
 		t.Errorf("Expected one user but found none")
@@ -330,6 +330,15 @@ func TestCanSearchForTweetContainingText(t *testing.T) {
 
 	if !strings.Contains(strings.ToLower(foundTweet.GetText()), strings.ToLower(query)) {
 		t.Errorf("Expected the tweet to contain %v, but didn't", query)
+	}
+}
+
+func BenchmarkPublishTweetWithFileTweetWriter(b *testing.B) {
+	tweetManager := service.NewTweetManager()
+	tweet := domain.NewTextTweet("user", "text")
+
+	for n := 0; n < b.N; n++ {
+		tweetManager.PublishTweet(tweet)
 	}
 }
 

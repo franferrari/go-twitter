@@ -9,6 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type QuoteTweetServer struct {
+	domain.TextTweet
+	TweetRefId int `json:"ref"`
+}
+
 var tweetManagerServer *service.TweetManager
 
 func NewGinServer(tweetManager *service.TweetManager) {
@@ -17,6 +22,7 @@ func NewGinServer(tweetManager *service.TweetManager) {
 	router.GET("/tweet/:tweetId", funcionQueHaceGet)
 	router.GET("/all", funcionQueHaceGetParaTodosLosTweets)
 	router.GET("/search/:query", buscarPorQuery)
+	router.GET("/users/:username", buscarUsuario)
 	router.POST("/newUser", registrarUsuario)
 	router.POST("/publishTweet", publishTweet)
 	router.POST("/publishImageTweet", publishImageTweet)
@@ -30,9 +36,6 @@ func funcionQueHaceGet(c *gin.Context) {
 	if e == nil {
 		c.String(http.StatusOK, tweet.GetPrintableTweet())
 		c.String(200, "\n")
-		c.JSON(200, gin.H{
-			"tweet": tweet,
-		})
 	} else {
 		c.String(http.StatusOK, e.Error())
 	}
@@ -45,10 +48,6 @@ func funcionQueHaceGetParaTodosLosTweets(c *gin.Context) {
 	} else {
 		for _, tweet := range listaTweets {
 			c.String(http.StatusOK, tweet.GetPrintableTweet())
-			c.String(200, "\n")
-			c.JSON(200, gin.H{
-				"tweet": tweet,
-			})
 			c.String(200, "\n")
 		}
 	}
@@ -72,13 +71,26 @@ func buscarPorQuery(c *gin.Context) {
 		if tweet != nil {
 			c.String(http.StatusOK, tweet.GetPrintableTweet())
 			c.String(200, "\n")
-			c.JSON(200, gin.H{
-				"tweet": tweet,
-			})
-			c.String(200, "\n")
 		}
 	}
 	return
+}
+
+func buscarUsuario(c *gin.Context) {
+	username := c.Param("username")
+	users, e := tweetManagerServer.GetUser(username)
+
+	if len(users) == 0 {
+		c.String(200, e.Error())
+		return
+	}
+
+	c.String(200, "Usuarios encontrados:\n")
+
+	for _, user := range users {
+		c.String(200, "Nombre de usuario: "+user.Name+". Email: "+user.Email+". Nickname: "+user.Nick)
+		c.String(200, "\n")
+	}
 }
 
 func registrarUsuario(c *gin.Context) {
@@ -87,7 +99,9 @@ func registrarUsuario(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	//tweetManagerServer.RegisterUser()
+
+	newUser := domain.NewUser(usuario.Name, usuario.Email, usuario.Nick, usuario.Password)
+	tweetManagerServer.RegisterUser(newUser)
 }
 
 func publishTweet(c *gin.Context) {
@@ -115,13 +129,15 @@ func publishImageTweet(c *gin.Context) {
 }
 
 func publishQuoteTweet(c *gin.Context) {
-	var tweet domain.ImageTweet
+	var tweet QuoteTweetServer
 	if err := c.ShouldBindJSON(&tweet); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	newTweet := domain.NewQuoteTweet(tweet.GetUser(), tweet.GetText(), tweet.GetQuotedTweet())
+	tweetRef, _ := tweetManagerServer.GetTweetByID(tweet.TweetRefId)
+
+	newTweet := domain.NewQuoteTweet(tweet.GetUser(), tweet.GetText(), tweetRef)
 
 	tweetManagerServer.PublishTweet(newTweet)
 }

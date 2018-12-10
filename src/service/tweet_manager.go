@@ -168,13 +168,18 @@ func (tweetMgr *TweetManager) RegisterUser(user *domain.User) error {
 }
 
 //GetUser retorna el usuario buscado, o nil si no se encuentra en la lista de usuarios
-func (tweetMgr *TweetManager) GetUser(nick string) *domain.User {
+func (tweetMgr *TweetManager) GetUser(username string) ([]*domain.User, error) {
+	coincidences := make([]*domain.User, 0)
 	for _, user := range tweetMgr.listAllUsers {
-		if user.Nick == nick {
-			return user
+		if strings.Contains(user.Name, username) {
+			coincidences = append(coincidences, user)
+
 		}
 	}
-	return nil
+	if len(coincidences) > 0 {
+		return coincidences, nil
+	}
+	return coincidences, fmt.Errorf("No user found")
 }
 
 func getType(tweet domain.Tweet) string {

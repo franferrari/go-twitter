@@ -10,7 +10,7 @@ type Tweet interface {
 	GetText() string
 	GetId() int
 	GetImageURL() string
-	GetQuotedTweet() *TextTweet
+	GetQuotedTweet() Tweet
 	GetDate() *time.Time
 	SetId(int)
 	GetPrintableTweet() string
@@ -33,7 +33,7 @@ type ImageTweet struct {
 //QuoteTweet define la estructura de un tweet que tiene un quotetweet
 type QuoteTweet struct {
 	TextTweet
-	TweetRef *TextTweet `json:"ref"`
+	TweetRef Tweet `json:"ref"`
 }
 
 //NewTweet crea un nuevo tweet
@@ -49,7 +49,7 @@ func NewImageTweet(user string, text string, url string) *ImageTweet {
 }
 
 //NewQuoteTweet crea un nuevo tweet de tipo quote
-func NewQuoteTweet(user string, text string, tweetRef *TextTweet) *QuoteTweet {
+func NewQuoteTweet(user string, text string, tweetRef Tweet) *QuoteTweet {
 	t := time.Now()
 	return &QuoteTweet{TextTweet: TextTweet{0, user, text, &t}, TweetRef: tweetRef}
 }
@@ -64,7 +64,7 @@ func (tweet *ImageTweet) GetPrintableTweet() string {
 }
 
 func (tweet *QuoteTweet) GetPrintableTweet() string {
-	return fmt.Sprintf(`@%s: %s "%s"`+"\n", tweet.User, tweet.Text, tweet.TweetRef.GetPrintableTweet())
+	return fmt.Sprintf(`@%s: %s "%s"`+"\n", tweet.User, tweet.Text, tweet.TweetRef.GetUser(), tweet.TweetRef.GetPrintableTweet())
 }
 
 //String muestra el user del tweet
@@ -102,15 +102,15 @@ func (tweet *QuoteTweet) GetImageURL() string {
 	return ""
 }
 
-func (tweet *TextTweet) GetQuotedTweet() *TextTweet {
+func (tweet *TextTweet) GetQuotedTweet() Tweet {
 	return nil
 }
 
-func (tweet *ImageTweet) GetQuotedTweet() *TextTweet {
+func (tweet *ImageTweet) GetQuotedTweet() Tweet {
 	return nil
 }
 
-func (tweet *QuoteTweet) GetQuotedTweet() *TextTweet {
+func (tweet *QuoteTweet) GetQuotedTweet() Tweet {
 	return tweet.TweetRef
 }
 
